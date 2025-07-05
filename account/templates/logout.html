@@ -1,0 +1,21 @@
+{% extends 'base_main.html' %} {% block content %} {% load static %}
+
+<title>Logout | Hawariyyun</title>
+<center>
+  <br />
+  <br />
+  <br />
+  <br />
+  {% if request.user.is_authenticated %}
+  <div style="margin-top: 30px">
+    <form method="POST">
+      {% csrf_token %}
+      <p>Apakah kamu yakin untuk logout dari akun kamu?</p>
+      <button type="submit" class="btn btn-warning">Iya aku ingin, logout.</button><br /><br />
+      <a href="{% url 'index' %}" class="btn btn-primary">Tidak jadi</a>
+    </form>
+  </div>
+  {% else %}
+  <p>you're not logged in would you like to <a href="{% url 'login' %}"> Login </a>?</p>
+  {% endif %} {% endblock content %}
+</center>

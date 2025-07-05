@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register | Banking</title>
+  <link rel="stylesheet" href="{% static 'css/iziToast.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+    body {
+      height: 100vh;
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
+    .container {
+      max-width: 700px;
+      width: 100%;
+      background-color: #ffffff;
+      padding: 25px 30px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .title {
+      font-size: 25px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 5px;
+    }
+    form .user-details {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .input-box {
+      margin-bottom: 15px;
+      width: calc(100% / 2 - 20px);
+    }
+    .input-box span.details {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .input-box input {
+      height: 45px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding-left: 15px;
+      font-size: 16px;
+      background-color: #f9f9f9;
+      transition: 0.3s;
+    }
+    .input-box input:focus {
+      border-color: #333;
+      background-color: #fff;
+    }
+    small {
+      font-size: 12px;
+      color: #888;
+    }
+    .button {
+      width: 100%;
+      margin-top: 20px;
+    }
+    .button input {
+      width: 100%;
+      height: 45px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .button input:hover {
+      background-color: #555;
+    }
+    .register {
+      margin-top: 15px;
+      display: block;
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+      text-decoration: none;
+    }
+    .register:hover {
+      color: #666;
+    }
+    .currency-select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      background-color: white;
+      color: black;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .currency-select:focus {
+      outline: none;
+      border-color: #888;
+    }
+    @media (max-width: 584px) {
+      .input-box {
+        width: 100%;
+      }
+    }
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <div class="container">
+    <div class="title">Register</div>
+    <div class="content">
+<form method="POST">
+  {% csrf_token %}
+  <div class="user-details">
+
+    <!-- Email -->
+    <div class="input-box">
+      <span class="details">Email</span>
+      {{ form.email }}
+      <small class="form-text text-muted">
+        Wajib menggunakan email asli, karena jika lupa password maka token akan dikirim ke email Anda.
+      </small>
+      {% if form.email.errors %}
+        <div style="color:red;">{{ form.email.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Username -->
+    <div class="input-box">
+      <span class="details">Username</span>
+      {{ form.username }}
+      <small class="form-text text-muted">
+        Maksimal 150 karakter. Hanya huruf, angka, dan karakter @/./+/-/_.
+      </small>
+      {% if form.username.errors %}
+        <div style="color:red;">{{ form.username.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <!-- First Name -->
+    <div class="input-box">
+      <span class="details">First Name</span>
+      {{ form.first_name }}
+    </div>
+
+    <!-- Last Name -->
+    <div class="input-box">
+      <span class="details">Last Name</span>
+      {{ form.last_name }}
+    </div>
+    <!-- NIK -->
+    <div class="input-box">
+      <span class="details">NIK</span>
+      {{ form.nik }}
+    </div>
+
+    <!-- KK -->
+    <div class="input-box">
+      <span class="details">KK</span>
+      {{ form.kk }}
+    </div>
+    
+    <!-- Password -->
+    <div class="input-box">
+      <span class="details">Password</span>
+      {{ form.password1 }}
+    </div>
+
+
+    <!-- Confirm Password -->
+    <div class="input-box">
+      <span class="details">Confirm Password</span>
+      {{ form.password2 }}
+    </div>
+
+
+    <!-- Currency Type -->
+  <div class="input-box">
+    <span class="details">{{ form.currency_type.label }}</span>
+    {{ form.currency_type }}<br>
+    <small class="form-text text-muted">
+      Pilih tipe mata uang yang ingin Anda gunakan untuk rekening utama.
+    </small>
+    {% if form.currency_type.errors %}
+      <div style="color:red;">{{ form.currency_type.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+    <small class="form-text text-muted">
+      <ul style="list-style:none">
+        <li>Password tidak boleh sama dengan username Anda.</li>
+        <li>Minimal 8 karakter.</li>
+        <li>Harus mengandung huruf, angka, dan simbol.</li>
+        <li>Contoh: <code>abcdefG123@@</code></li>
+        <li>Pastikan Confirm Password sama dengan Password.</li>
+      </ul>
+    </small>
+
+  </div>
+
+  <div class="button" style="display: flex; flex-direction: column; gap: 1rem;">
+    <input type="submit" value="Register" style="padding: 0.6em;" />
+  </div>
+
+  <a href="{% url 'customerlogin' %}" class="register">Sudah punya akun? Silakan login</a>
+</form>
+
+    </div>
+  </div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('.select2').select2({
+      placeholder: "Pilih atau ketik mata uang...",
+      allowClear: true
+    });
+  });
+</script>
+  <script src="{% static 'js/iziToast.min.js' %}"></script>
+  {% if messages %}
+    {% for message in messages %}
+      <script>
+        iziToast.{{ message.tags }}({
+          title: '{{ message }}',
+          position: 'topCenter'
+        });
+      </script>
+    {% endfor %}
+  {% endif %}
+</body>
+</html>
