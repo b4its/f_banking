@@ -23,7 +23,23 @@ Banking - Transfer Tunai
                 <div class="col-xxl-8 mb-6 order-0">
                   <div class="card p-4">
                     <h4>Tarik Tunai</h4>
-                    <p>Halo</p>
+                    <form method="POST">
+                      <div class="mb-3">
+                          <label for="exampleFormControlInput1" class="form-label">Nominal Tunai</label>
+                          <input type="number"
+                                class="form-control"
+                                id="exampleFormControlInput1"
+                                placeholder="Masukkan nominal tunai"
+                                oninput="if(this.value.length > 16) this.value = this.value.slice(0, 16);">
+                          <label for="exampleFormControlInput1" class="form-label mx-2 opacity-50" >nominal tunai untuk anda tarik</label>
+
+                      </div>
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+
+
+
 
 
                   </div>

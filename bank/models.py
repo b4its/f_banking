@@ -39,13 +39,17 @@ class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users_transaction')
     code_transactions = models.CharField(max_length=255, blank=False, null=False)
     currency = models.ManyToManyField(Currency, related_name='users_currency_transaction')
-    nominal = models.DecimalField(max_digits=15, decimal_places=2)  # Ganti dari CharField
+    nominal = models.DecimalField(max_digits=15, decimal_places=2, null = True)  # Ganti dari CharField
+    receiver_currency = models.DecimalField(max_digits=15, decimal_places=2, null = True)  # Ganti dari CharField
     jenis_transaksi = models.IntegerField(choices=TRANSACTIONS_TYPE, default=1)
     status = models.IntegerField(choices=STATUS_TRANSACTIONS, default=1)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.user} mengirim {self.jenis_transaksi} ke {self.currency}: dengan nominal {self.nominal}'  # Ganti dari self.name yang tidak ada
+        currencies = ", ".join([
+            f"{c.user.username} - {c.no_rekening}" for c in self.currency.all()
+        ])
+        return f"Transaksi oleh {self.user.username} {self.nominal:,.2f} ({self.get_jenis_transaksi_display()}) ke {currencies} | {self.receiver_currency} "
 
     class Meta:
         ordering = ['-created']

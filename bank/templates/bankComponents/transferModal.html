@@ -1,0 +1,56 @@
+{% load static %}
+<div class="modal fade" id="modalTransferNext" tabindex="-1" aria-labelledby="modalTransferNextLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'transfer_stored' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="modalTransferNextLabel">Transfer Tunai</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="namaLengkapInput" class="form-label">Nama Lengkap</label>
+            <input type="text" class="form-control" id="namaLengkapInput" name="namaLengkap"readonly>
+          </div>
+          <div class="mb-3">
+              <label for="exampleFormControlInput1" class="form-label">Nominal Tunai</label>
+              <div class="input-group">
+              <span class="input-group-text" id="basic-addon1">  {{ tipeCurrency|join:", " }}</span>
+              <input type="number"
+                    class="form-control"
+                    id="exampleFormControlInput1"
+                    placeholder="Masukkan nominal tunai"
+                    name="nominalTunai"
+                    oninput="if(this.value.length > 16) this.value = this.value.slice(0, 16);">
+
+              </div>
+
+              <label for="exampleFormControlInput1" class="form-label mx-2 opacity-50" >nominal tunai untuk anda tarik</label>
+          </div>
+
+          <div class="mb-3">
+              <label for="exampleFormControlInput1" class="form-label">Currency</label>
+              <input type="text"
+                    class="form-control"
+                    id="currency_typeText"
+                    name="currencyTypesVisual" readonly>
+              <label for="exampleFormControlInput1" class="form-label mx-2 opacity-50">Currency mata uang</label>
+            </div>
+            <p class="alert alert-warning text-warning">pastikan data tersebut benar sebelum transfer tunai ke rekening tersebut..</p>
+            <input type="number"
+            id="currency_typeNumber"
+            name="currencyTypeNumber" hidden>
+            <input type="text" name="noRekening" id="rekeningModal" hidden>
+            <input type="text" name="usernameCurrencys" id="usernameCurrency" hidden>
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Kirim Tunai</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+

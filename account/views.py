@@ -11,11 +11,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login,logout,authenticate
 from .helpers import send_forget_password_mail
 from helper import typeCurrency, cryptographyAlgorithm  # pastikan helper di-import
-import random, requests
+import random, requests, time
 #Generate token
 
 def generate_rekening():
-    return ''.join([str(random.randint(0, 9)) for _ in range(8)])
+    timestamp = int(time.time()) % 100000  # Ambil 5 digit terakhir timestamp
+    rand_digits = random.randint(100, 999)  # Tambah 3 digit acak
+    return f"{timestamp:05d}{rand_digits:03d}"  # Total 8 digit
 
 def register(request):
     if request.method == 'POST':
