@@ -68,10 +68,9 @@
 
           <ul class="menu-inner py-1">
 
-            <li class="menu-item active">
+            <li class="menu-item menuList" id="dashboard">
               <a
-                href="https://demos.themeselection.com/sneat-bootstrap-html-admin-template/html/vertical-menu-template/app-chat.html"
-                target="_blank"
+                href="{% url 'dashboard' %}"
                 class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
                 <div class="text-truncate" data-i18n="Dashboards">Dashboard</div>
@@ -79,31 +78,31 @@
             </li>
 
             <!-- Pages -->
-            <li class="menu-item">
+            <li class="menu-item menuList" id="features">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-dock-top"></i>
-                <div class="text-truncate" data-i18n="Account Settings">Account Settings</div>
+                <div class="text-truncate" data-i18n="Account Settings">Features</div>
               </a>
               <ul class="menu-sub">
+                
                 <li class="menu-item">
-                  <a href="pages-account-settings-account.html" class="menu-link">
-                    <div class="text-truncate" data-i18n="Account">Account</div>
+                  <a href="{% url 'transferTunai' %}" class="menu-link">
+                    <div class="text-truncate" data-i18n="Account">Transfer Tunai</div>
                   </a>
                 </li>
+
                 <li class="menu-item">
-                  <a href="pages-account-settings-notifications.html" class="menu-link">
-                    <div class="text-truncate" data-i18n="Notifications">Notifications</div>
+                  <a href="{% url 'tarikTunai' %}" class="menu-link">
+                    <div class="text-truncate" data-i18n="Account">Tarik Tunai</div>
                   </a>
                 </li>
-                <li class="menu-item">
-                  <a href="pages-account-settings-connections.html" class="menu-link">
-                    <div class="text-truncate" data-i18n="Connections">Connections</div>
-                  </a>
-                </li>
+
+
+
               </ul>
             </li>
             
-            <li class="menu-item">
+            <li class="menu-item menuList" id="authenticate">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-lock-open-alt"></i>
                 <div class="text-truncate" data-i18n="Authentications">Authentications</div>

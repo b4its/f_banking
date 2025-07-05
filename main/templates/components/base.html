@@ -62,7 +62,22 @@
     <!-- / Layout wrapper -->
 
     <!-- Core JS -->
+    {% block customJavascript %}{% endblock customJavascript %}
+    <script>
+        // Tunggu sampai DOM siap
+        document.addEventListener("DOMContentLoaded", function () {
+          // Ambil semua elemen dengan class menuList
+          const menuItems = document.querySelectorAll(".menuList");
 
+          // Looping setiap elemen menuList
+          menuItems.forEach((item) => {
+            // Cek apakah id-nya sama dengan nilai dari variable 'halaman'
+            if (item.id === halaman) {
+              item.classList.add("active"); // Tambahkan class active
+            }
+          });
+        });
+    </script>
     <script src="{% static 'template/assets/vendor/libs/jquery/jquery.js' %}"></script>
 
     <script src="{% static 'template/assets/vendor/libs/popper/popper.js' %}"></script>
