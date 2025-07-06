@@ -1,6 +1,7 @@
 import json, hashlib, random, string
 from django.shortcuts import render, redirect, get_object_or_404
 from bank.models import Currency, Transaction
+from account.models import Profile
 from django.http import JsonResponse
 from helper import typeCurrency
 from django.contrib import messages
@@ -44,11 +45,6 @@ CURRENCY_TYPE = [
     (i, f"{code} - {name}") for i, (code, name) in enumerate(typeCurrency.currencyType)
 ]
 
-def get_currency_code_from_index(index):
-    try:
-        return typeCurrency.currencyType[int(index)][0]
-    except (IndexError, ValueError):
-        return "UNKNOWN"
 
 
 def transferStore(request):
@@ -80,7 +76,7 @@ def transferStore(request):
             return JsonResponse(result)
         except Currency.DoesNotExist:
             return JsonResponse({'found': False})
-        
+
 def transferStored(request):
     if request.method == 'POST':
         user = request.user
@@ -96,17 +92,10 @@ def transferStored(request):
             messages.error(request, "Username penerima tidak ditemukan.")
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        print(f"[DEBUG] User login     : {user.username}")
-        print(f"[DEBUG] No Rekening    : {no_rekening}")
-        print(f"[DEBUG] Nominal Tunai  : {nominal_tunai}")
-        print(f"[DEBUG] Currency Type  : {currency_type_number}")
-
         # Konversi nominal_tunai menjadi Decimal
         try:
             nominal = Decimal(nominal_tunai)
-            print(f"[DEBUG] Nominal Decimal: {nominal}")
         except:
-            print("[ERROR] Nominal tidak valid.")
             messages.error(request, "Nominal tidak valid.")
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -116,71 +105,94 @@ def transferStored(request):
                 user=user_penerima,
                 no_rekening=no_rekening
             )
-            print(f"[DEBUG] Receiver ditemukan: {currency_receiver.user.username}")
         except Currency.DoesNotExist:
-            print("[ERROR] Rekening penerima tidak ditemukan.")
             messages.error(request, "Rekening tujuan tidak ditemukan.")
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
         # Validasi rekening pengirim
         try:
             currency_sender = Currency.objects.get(user=user)
-            print(f"[DEBUG] Sender ditemukan: saldo = {currency_sender.saldo}")
-            if currency_sender.jenis_rekening == "mencurigakan":
-                print("Pengirim ini mencurigakan")
         except Currency.DoesNotExist:
-            print("[ERROR] Rekening pengirim tidak ditemukan.")
             messages.error(request, "Rekening Anda tidak ditemukan.")
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        # Ambil kode mata uang pengirim dan penerima
-        sender_currency_code = get_currency_code_from_index(currency_sender.currency_type)
-        receiver_currency_code = get_currency_code_from_index(currency_receiver.currency_type)
+        # Deteksi potensi fraud
+        fraud_detected = False
 
-        print(f"[DEBUG] Sender Currency Type   : {sender_currency_code}")
-        print(f"[DEBUG] Receiver Currency Type : {receiver_currency_code}")
+        # 1. Cek NIK & KK dari Profile pengirim dan penerima
+        try:
+            profile_sender = Profile.objects.get(user=user)
+            profile_receiver = Profile.objects.get(user=user_penerima)
+            if not profile_sender.nik or not profile_sender.kk:
+                print("[FRAUD] NIK atau KK pengirim tidak ditemukan.")
+                fraud_detected = True
+            if not profile_receiver.nik or not profile_receiver.kk:
+                print("[FRAUD] NIK atau KK penerima tidak ditemukan.")
+                fraud_detected = True
+        except Profile.DoesNotExist:
+            print("[FRAUD] Profil pengirim atau penerima tidak ditemukan.")
+            fraud_detected = True
 
-        # Konversi nominal dengan tipe data Decimal
+        # 2. Cek jenis rekening mencurigakan
+        if currency_sender.jenis_rekening.lower() == "mencurigakan":
+            print(f"[FRAUD] Jenis rekening pengirim mencurigakan: {currency_sender.jenis_rekening}")
+            fraud_detected = True
+        if currency_receiver.jenis_rekening.lower() == "mencurigakan":
+            print(f"[FRAUD] Jenis rekening penerima mencurigakan: {currency_receiver.jenis_rekening}")
+            fraud_detected = True
+
+        # 3. Cek status aktif
+        if not currency_sender.status_aktif:
+            print("[FRAUD] Rekening pengirim tidak aktif.")
+            fraud_detected = True
+        if not currency_receiver.status_aktif:
+            print("[FRAUD] Rekening penerima tidak aktif.")
+            fraud_detected = True
+
+        # Ambil kode mata uang
+        sender_currency_code = typeCurrency.get_currency_code_from_index(currency_sender.currency_type)
+        receiver_currency_code = typeCurrency.get_currency_code_from_index(currency_receiver.currency_type)
+
+        # Konversi mata uang
         hasil = typeCurrency.convert_currency(nominal, sender_currency_code, receiver_currency_code)
 
-        if hasil is not None:
-            currency_result = hasil
-            print(f"Hasil Konversi: {currency_result} {receiver_currency_code}")
-        else:
-            print("Konversi gagal. Coba periksa koneksi internet atau mata uang yang digunakan.")
+        if hasil is None:
             messages.error(request, "Konversi gagal.")
             return redirect('transferTunai')
 
-        # Cek saldo cukup
+        currency_result = hasil
+
+        # Cek saldo
         if currency_sender.saldo < nominal:
-            print("[ERROR] Saldo tidak cukup.")
             messages.error(request, "Saldo Anda tidak cukup.")
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        # Proses transfer
+        # Proses transfer saldo
         currency_sender.saldo -= nominal
         currency_receiver.saldo += currency_result
         currency_sender.save()
         currency_receiver.save()
 
-        print(f"[DEBUG] Saldo setelah transfer - Sender: {currency_sender.saldo}, Receiver: {currency_receiver.saldo}")
-
-        # Buat transaksi
+        # Buat transaksi dengan status FRAUD jika terdeteksi
         kode_transaksi = generate_unique_code()
         transaksi = Transaction.objects.create(
             user=user,
             code_transactions=kode_transaksi,
             nominal=nominal,
-            receiver_currency = currency_result,
-            jenis_transaksi=1,  # Transfer Tunai
-            status=1,           # Berhasil
+            receiver_currency=currency_result,
+            jenis_transaksi=0,
+            status=2 if fraud_detected else 1,
         )
         transaksi.currency.add(currency_receiver)
 
-        print(f"[SUCCESS] Transaksi berhasil dibuat dengan kode: {kode_transaksi}")
-        messages.success(request, "Transfer tunai berhasil.")
+        if fraud_detected:
+            print(f"[FRAUD DETECTED] Transaksi kode {kode_transaksi} ditandai sebagai mencurigakan.")
+        else:
+            print(f"[INFO] Transaksi kode {kode_transaksi} aman.")
+
+        messages.success(request, f"Transfer Tunai Sebesar {receiver_currency_code} {typeCurrency.format_currency(currency_result)}")
         return redirect('transferTunai')
-    
+
 def tarikViews(request):
     saldo = Currency.objects.filter(user=request.user).order_by('-created').first()
     context = {

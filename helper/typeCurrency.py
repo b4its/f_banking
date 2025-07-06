@@ -214,3 +214,17 @@ class CurrencyConverter:
 def convert_currency(amount, from_currency, to_currency):
     converter = CurrencyConverter()
     return converter.convert_currency(amount, from_currency, to_currency)
+
+def get_currency_code_from_index(index):
+    try:
+        return currencyType[int(index)][0]
+    except (IndexError, ValueError):
+        return "Uang"
+
+def format_currency(amount):
+    try:
+        amount = float(amount)
+        rupiah = f"{amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return rupiah
+    except ValueError:
+        return "Input tidak valid"

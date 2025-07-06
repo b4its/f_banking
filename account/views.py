@@ -12,6 +12,7 @@ from django.contrib.auth import login,logout,authenticate
 from .helpers import send_forget_password_mail
 from helper import typeCurrency, cryptographyAlgorithm  # pastikan helper di-import
 import random, requests, time
+from requests.exceptions import ConnectionError, Timeout, RequestException
 #Generate token
 
 def generate_rekening():
@@ -76,59 +77,73 @@ def register(request):
             form_nik = form.cleaned_data['nik']
             form_kk = form.cleaned_data['kk']
 
-            # Buat user
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password1,
-                first_name=first_name,
-                last_name=last_name,
-            )
-            response = requests.get("http://192.168.1.7:8000/api/v1/citizen-identities")
-            rekening_type = "tidak diketahui"
-            encrypted = cryptographyAlgorithm.encrypt_data(112,211,404,505,404,11)
-            if response.status_code == 200:
-                data = response.json()
-                print("Data dari Laravel:", data)
+        
+            statusRespon = 404
+            try:
+                response = requests.get("http://192.168.1.4:8000/api/v1/citizen-identities", timeout=10)
+                rekening_type = "tidak diketahui"
+                encrypted = cryptographyAlgorithm.encrypt_data(112, 211, 404, 505, 404, 11)
 
-                for warga in data:
-                    if warga['nik'] == form_nik and warga['kk'] == form_kk:
-                        rekening_type = "aman"
+                if response.status_code == 200:
+                    data = response.json()
+                    print("Data dari Laravel:", data)
+                    statusRespon = 200
 
-                        # Contoh penggunaan enkripsi (misalnya data dari Laravel):
-                        encrypted = cryptographyAlgorithm.encrypt_data(warga['nik'], warga['kk'], warga['sim'], warga['npwp'], warga['paspor'], warga['id'])
-                        print("Hasil Enkripsi:", encrypted)
-                        
-                        break
+                    for warga in data:
+                        if warga['nik'] == form_nik and warga['kk'] == form_kk:
+                            rekening_type = "aman"
+                            encrypted = cryptographyAlgorithm.encrypt_data(warga['nik'], warga['kk'], warga['sim'], warga['npwp'], warga['paspor'], warga['id'])
+                            print("Hasil Enkripsi:", encrypted)
+                            break
                     else:
+                        rekening_type = "mencurigakan"
                         encrypted = cryptographyAlgorithm.encrypt_data(form_nik, form_kk, 404, 505, 404, 77)
                         print("Mencurigakan")
-
                 else:
-                    rekening_type = "mencurigakan"
-            else:
-                print("Gagal menghubungkan ke API Laravel")
+                    messages.warning(request, '[404] Tidak dapat menghubungkan ke server')
+                    print("Gagal menghubungkan ke API Laravel (status bukan 200)")
+                    return redirect('register')
 
-            # Buat Profile
-            Profile.objects.create(
-                user=user,
-                nama_lengkap=f"{first_name} {last_name}",
-                nik=nik,
-                kk=kk,
-                verified_identities = encrypted,
-                token=''  # kosong seperti diminta
-            )
-            
-            Currency.objects.create(
-                user=user,
-                no_rekening=generate_rekening(),
-                saldo=0,
-                currency_type=currency_type,
-                jenis_rekening= rekening_type  # default
-            )
+            except (ConnectionError, Timeout) as e:
+                messages.warning(request, 'Gagal terhubung ke server..')
+                print("Exception:", str(e))
+                return redirect('register')
+
+            except RequestException as e:
+                messages.warning(request, 'Terjadi kesalahan saat menghubungi server.')
+                print("Exception:", str(e))
+                return redirect('register')
+
+            if (statusRespon == 200):
+
+                # Buat user
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password1,
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+                # Buat Profile
+                Profile.objects.create(
+                    user=user,
+                    nama_lengkap=f"{first_name} {last_name}",
+                    nik=nik,
+                    kk=kk,
+                    verified_identities = encrypted,
+                    token=''  # kosong seperti diminta
+                )
+                
+                Currency.objects.create(
+                    user=user,
+                    no_rekening=generate_rekening(),
+                    saldo=0,
+                    currency_type=currency_type,
+                    jenis_rekening= rekening_type  # default
+                )
 
 
-            login(request, user)
+            # login(request, user)
             msg = "Registrasi berhasil! Silakan login."
             print(f"Success: {msg}")
             messages.success(request, msg)

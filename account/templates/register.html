@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Register | Banking</title>
-  <link rel="stylesheet" href="{% static 'css/iziToast.css' %}">
+  <link rel="stylesheet" href="{% static 'template/css/iziToast.css' %}">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
   <style>
@@ -16,9 +16,9 @@
       font-family: "Poppins", sans-serif;
     }
     body {
-      height: 100vh;
       background-color: #ffffff;
       display: flex;
+      flex-direction:column;
       justify-content: center;
       align-items: center;
       padding: 10px;
@@ -240,13 +240,13 @@
     });
   });
 </script>
-  <script src="{% static 'js/iziToast.min.js' %}"></script>
+  <script src="{% static 'template/js/iziToast.min.js' %}"></script>
   {% if messages %}
     {% for message in messages %}
       <script>
         iziToast.{{ message.tags }}({
           title: '{{ message }}',
-          position: 'topCenter'
+          position: 'topRight'
         });
       </script>
     {% endfor %}

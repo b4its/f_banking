@@ -45,7 +45,7 @@ Banking - Transfer Tunai
 
                   <!-- Next Step Modal -->
                   {% include "bankComponents/transferModal.html" %}
-
+                    
                   </div>
                 </div>
                 
@@ -105,7 +105,11 @@ document.getElementById('rekeningForm').addEventListener('submit', function(e) {
             // buka modal
             new bootstrap.Modal(document.getElementById('modalTransferNext')).show();
         } else {
-            alert('Nomor rekening tidak ditemukan');
+            Swal.fire({
+              title: "ERROR",
+              text: "nomor rekening tidak dapat ditemukan..",
+              icon: "error"
+            });
         }
     })
     .catch(error => {

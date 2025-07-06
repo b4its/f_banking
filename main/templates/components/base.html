@@ -27,6 +27,7 @@
       rel="stylesheet" />
 
     <link rel="stylesheet" href="{% static 'template/assets/vendor/fonts/iconify-icons.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.22/dist/sweetalert2.min.css" integrity="sha256-NWFDlc+2O5YBqGykjREpkSKDMB6yEu5qPecoRrhcsC0=" crossorigin="anonymous">
 
     <!-- Core CSS -->
     <!-- build:css template/assets/vendor/css/theme.css  -->
@@ -78,7 +79,23 @@
           });
         });
     </script>
+
+
     <script src="{% static 'template/assets/vendor/libs/jquery/jquery.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22/dist/sweetalert2.all.min.js" integrity="sha256-Ua8fKA4E1l7RSqT5HOjK0m/PrSwP41XFTs++qmtWey8=" crossorigin="anonymous"></script>
+    {% block messages %}
+    {% endblock messages %}
+    {% if messages %}
+      <script>
+        {% for message in messages %}
+          Swal.fire({
+            title: "{{ message.tags|capfirst }}",
+            text: "{{ message }}",
+            icon: "{% if 'success' in message.tags %}success{% elif 'error' in message.tags %}error{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
+          });
+        {% endfor %}
+      </script>
+    {% endif %}
 
     <script src="{% static 'template/assets/vendor/libs/popper/popper.js' %}"></script>
     <script src="{% static 'template/assets/vendor/js/bootstrap.js' %}"></script>
